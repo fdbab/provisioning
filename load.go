@@ -7,24 +7,35 @@ import (
 	"os"
 )
 
+var numBytes int64 = 0
+
 func load(fileUrl string, fileName string) {
 
-	// Create the file
-	out, err := os.Create(fileName)
+	// Datei erstellen
+	file, err := os.Create(fileName)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
-	defer func(out *os.File) {
-		err := out.Close()
+	defer func(file *os.File) {
+		err := file.Close()
 		if err != nil {
 
 		}
-	}(out)
+	}(file)
 
-	// Get the data
-	resp, err := http.Get(fileUrl)
+	// HTTP-Request erstellen
+	req, err := http.NewRequest("GET", fileUrl, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
+	}
+
+	// HTTP-Client erstellen
+	client := &http.Client{}
+
+	// HTTP-Response lesen
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -33,9 +44,23 @@ func load(fileUrl string, fileName string) {
 		}
 	}(resp.Body)
 
-	// Write the data to the file
-	_, err = io.Copy(out, resp.Body)
+	// Datei-Inhalt in Datei schreiben
+	written, err := io.Copy(file, io.TeeReader(resp.Body, &progressWriter{}))
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
+
+	fmt.Printf("\nHerunterladen abgeschlossen: %d Bytes heruntergeladen\n", written)
+}
+
+type progressWriter struct{}
+
+func (pw *progressWriter) Write(p []byte) (int, error) {
+	numBytes += int64(len(p))
+	fmt.Printf("\rHerunterladen... %d Bytes heruntergeladen", bytesToMegabytes(numBytes))
+	return len(p), nil
+}
+
+func bytesToMegabytes(bytes int64) string {
+	return fmt.Sprintf("%.2f MB", float64(bytes)/1024/1024)
 }
