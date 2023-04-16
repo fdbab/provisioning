@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Input-Feld Beispiel</title>
+  </head>
+  <body>
+    <form>
+      <label for="inputfeld">Gib hier einen Wert ein:</label>
+      <input type="text" id="inputfeld" name="inputfeld">
+      <br>
+      <input type="submit" value="Absenden">
+    </form>
+
+    <script>
+      // das Input-Element und das Formular-Element auswählen
+      const input = document.getElementById('inputfeld');
+      const form = document.querySelector('form');
+
+      // Ereignis-Listener hinzufügen, um das Formular bei der Eingabe zu überwachen
+      form.addEventListener('submit', (event) => {
+        // das Standardverhalten des Formulars (Seiten-Reload) unterdrücken
+        event.preventDefault();
+
+        // den eingegebenen Wert des Nutzers abrufen und in einer Alert-Box anzeigen
+        const eingabe = input.value;
+        alert(`Du hast den Wert "${eingabe}" eingegeben.`);
+      });
+
+      // Ereignis-Listener hinzufügen, um die Enter-Taste zu überwachen
+      input.addEventListener('keyup', (event) => {
+        // Wenn die Enter-Taste gedrückt wird (keyCode 13), das Formular manuell absenden
+        if (event.keyCode === 13) {
+          form.submit();
+        }
+      });
+    </script>
+  </body>
+</html>
